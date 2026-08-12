@@ -23,7 +23,7 @@ const PLUGIN_ID = "korean-plain@claude-korean-plain";
 const INLINE_PLUGIN_ID = "korean-plain@inline";
 const MARKETPLACE_NAME = "claude-korean-plain";
 const README_MARKETPLACE_SOURCE = "https://github.com/byunghun-ben/claude-korean-plain.git";
-const EXPECTED_VERSION = "2.1.223 (Claude Code)";
+const EXPECTED_VERSION = "2.1.228 (Claude Code)";
 const CACHE_PLUGIN_FILES = [
   ".claude-plugin/plugin.json",
   "output-styles/korean-plain.md",

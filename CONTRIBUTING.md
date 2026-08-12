@@ -21,10 +21,10 @@ node tests/docs-contract.test.mjs
 
 ## 검증 환경
 
-`node tests/run-all.mjs`의 결정적 검사는 Claude Code 없이 실행됩니다. 뒤에 이어지는 설치 E2E는 Claude Code `2.1.223`에 고정돼 있고 CI가 같은 버전을 설치합니다. 다른 버전이 잡히면 결정적 검사까지 실행한 뒤, 설치 E2E는 실행하지 않고 안내와 함께 종료합니다.
+`node tests/run-all.mjs`의 결정적 검사는 Claude Code 없이 실행됩니다. 뒤에 이어지는 설치 E2E는 Claude Code `2.1.228`에 고정돼 있고 CI가 같은 버전을 설치합니다. 다른 버전이 잡히면 결정적 검사까지 실행한 뒤, 설치 E2E는 실행하지 않고 안내와 함께 종료합니다.
 
 ```sh
-npm install --global @anthropic-ai/claude-code@2.1.223
+npm install --global @anthropic-ai/claude-code@2.1.228
 CLAUDE_BIN=/absolute/path/to/claude node tests/run-all.mjs
 ```
 

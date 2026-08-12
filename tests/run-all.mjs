@@ -8,7 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const claude = process.env.CLAUDE_BIN || spawnSync("sh", ["-c", "command -v claude"], { encoding: "utf8" }).stdout.trim();
 // tests/install-e2e.mjs pins the same version, and CI installs it before
 // running this suite. Raising it needs a fresh model attestation.
-const PINNED_CLAUDE_VERSION = "2.1.223";
+const PINNED_CLAUDE_VERSION = "2.1.228";
 const PINNED_VERSION_OUTPUT = `${PINNED_CLAUDE_VERSION} (Claude Code)`;
 const deterministic = [
   ["tests/plugin-contract.test.mjs"],

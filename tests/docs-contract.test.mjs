@@ -13,6 +13,7 @@ const DOCUMENTS = [
   "docs/EVALUATION.md",
   "docs/RELEASE-CHECKLIST.md",
   "docs/releases/v0.1.0.md",
+  "docs/releases/v0.2.0.md",
   ".github/ISSUE_TEMPLATE/bug-report.yml",
   ".github/ISSUE_TEMPLATE/config.yml",
 ];
@@ -53,7 +54,7 @@ function validate(root) {
     "무조건 짧게",
     "영어로 질문해도 한국어 답이 옵니다",
     "keep-coding-instructions",
-    "Claude Code 2.1.223에서 검증",
+    "Claude Code 2.1.228에서 검증",
     "MIT License",
     "사실 보존",
     "번역투 완화",
@@ -68,7 +69,7 @@ function validate(root) {
   assert.match(readme, /fork한 agent는 부모 system prompt를 상속합니다/);
 
   const evaluation = text(root, "docs/EVALUATION.md");
-  includesAll(evaluation, ["결정적 gate", "결정적 gate가 덮지 않는 범위", "opt-in 증명", "선택적인 유료 모델 실행", "--allow-model-calls", "정제한 집계", "mode `0600`", "Claude Code 2.1.223에서 검증"], "EVALUATION");
+  includesAll(evaluation, ["결정적 gate", "결정적 gate가 덮지 않는 범위", "opt-in 증명", "v0.2.0 공개 전 대표 모델 결과", "선택적인 유료 모델 실행", "--allow-model-calls", "정제한 집계", "mode `0600`", "Claude Code 2.1.228에서 검증"], "EVALUATION");
   assert.match(evaluation, /모델이나 네트워크를 호출하지 않습니다/);
   assert.match(evaluation, /원시 (?:model output|응답).*공개하거나 commit하지 않습니다/s);
 
@@ -81,8 +82,8 @@ function validate(root) {
   const release = text(root, "docs/RELEASE-CHECKLIST.md");
   includesAll(release, ["claude plugin validate --strict", "user scope", "project scope", "전체 Git history", "public clone", "cache", "완전히 회수할 수 없습니다", "Community Marketplace", "v0.1.0 완료 범위에 포함하지 않습니다"], "release checklist");
 
-  const changelogAndNote = `${text(root, "CHANGELOG.md")}\n${text(root, "docs/releases/v0.1.0.md")}`;
-  includesAll(changelogAndNote, ["0.1.0", "output style", "별도의 업로드 release asset"], "release documents");
+  const changelogAndNote = `${text(root, "CHANGELOG.md")}\n${text(root, "docs/releases/v0.1.0.md")}\n${text(root, "docs/releases/v0.2.0.md")}`;
+  includesAll(changelogAndNote, ["0.1.0", "0.2.0", "output style", "별도의 업로드 release asset"], "release documents");
   assert.match(text(root, "SECURITY.md"), /공개 issue.*secret/s);
 
   const publicDocs = DOCUMENTS.map((file) => text(root, file)).join("\n");

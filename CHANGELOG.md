@@ -11,7 +11,7 @@
 - README에 한국어로 답하는 언어 동작과 `keep-coding-instructions`를 적었습니다.
 - 결정적 gate가 output style 등록 여부를 확인하지 않는다는 점을 평가 문서에 남겼습니다.
 
-이 버전은 아직 release하지 않았습니다. style 파일이 바뀌었으므로 release 전에 대표 모델 실행과 attestation을 다시 만들어야 합니다.
+Claude Code 2.1.228에서 검증했습니다. 대표 모델 실행 결과는 [docs/EVALUATION.md](docs/EVALUATION.md)에 있습니다.
 
 ## 0.1.0
 

@@ -9,7 +9,7 @@
 - [ ] 격리된 user scope와 project scope에서 설치, 선택 없이 자동 적용, `/clear`, disable 후 해제, uninstall, marketplace remove를 검증한다.
 - [ ] 설치 전후 diff에서 installer-managed marketplace 선언과 `enabledPlugins`만 바뀌고 `outputStyle`은 설치기가 쓰지 않음을 확인한다.
 - [ ] working tree와 전체 Git history, commit message, annotated tag, tag archive의 공개 allowlist와 민감 정보 검사가 통과한다.
-- [ ] Claude Code 2.1.223에서 대표 모델 실행을 opt-in으로 수행하고 정제 집계만 기록한다.
+- [ ] Claude Code 2.1.228에서 대표 모델 실행을 opt-in으로 수행하고 정제 집계만 기록한다.
 - [ ] 원시 model output과 임시 evidence가 Git 추적 대상 밖에 있고 mode `0600`인지 확인한다.
 - [ ] clean `main`의 release commit과 그 버전의 annotated tag가 같은 commit을 가리킨다.
 

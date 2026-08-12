@@ -34,7 +34,7 @@ CONFIG_SHA="$(node -e 'const c=require("node:crypto");process.stdout.write(c.cre
 node scripts/evaluate.mjs score \
   --responses "$EVIDENCE_DIR/responses.json" \
   --require-pass \
-  --expect-claude-version "2.1.223 (Claude Code)" \
+  --expect-claude-version "2.1.228 (Claude Code)" \
   --expect-model sonnet \
   --expect-effort high \
   --expect-style-name "Korean Plain" \
@@ -58,7 +58,7 @@ output style이 Claude Code에 등록됐는지는 결정적 검사로 확인하�
 
 문서에는 실행 환경과 정제한 집계만 남깁니다. 예를 들면 실행 수, required fact 보존율, forbidden fact 검출 수, 불확실성 보존 여부, 전체 통과 여부입니다. prompt, 원시 응답, 전체 transcript, 인증 정보, 개인 정보는 공개하지 않습니다.
 
-Claude Code 2.1.223에서 검증한 결과만 release gate에 사용합니다. 모델 결과는 시점에 따라 달라질 수 있으므로 재현 가능한 결정적 검사와 별도로 해석합니다.
+Claude Code 2.1.228에서 검증한 결과만 release gate에 사용합니다. 모델 결과는 시점에 따라 달라질 수 있으므로 재현 가능한 결정적 검사와 별도로 해석합니다.
 
 ## v0.1.0 공개 전 대표 모델 결과
 
@@ -71,4 +71,17 @@ Claude Code 2.1.223에서 검증한 결과만 release gate에 사용합니다. �
 
 release gate는 이 두 실행의 통과를 HEAD와 세 SHA-256에 결합한 외부 mode `0600` attestation으로 확인합니다. 이 표는 정제한 집계이며 prompt와 원시 응답은 포함하지 않습니다.
 
-위 style SHA-256은 v0.1.0 시점의 파일입니다. 0.1.1에서 style 본문이 바뀌었으므로 이 결과는 v0.1.0에만 해당하고, 다음 release 전에는 대표 모델 실행과 attestation을 다시 만들어야 합니다.
+위 style SHA-256은 v0.1.0 시점의 파일입니다. 이후 style 본문이 바뀌었으므로 이 표는 v0.1.0에만 해당합니다. 현재 tree에 대한 결과는 아래 절을 보세요.
+
+## v0.2.0 공개 전 대표 모델 결과
+
+2026-08-12에 Claude Code `2.1.228 (Claude Code)`에서 `qa-gap` 합성 case를 각 조합으로 한 번 실행했습니다. 평가 설정에는 `/config`가 저장하는 qualified 값 `korean-plain:Korean Plain`을 적용했습니다. 두 실행 모두 style `Korean Plain`, style SHA-256 `8485edaf14ff512d6cc30d201efb7d24b3259bfffa0aefbe3c1e136a5b1c228b`, plugin SHA-256 `94fadd058add3f8556538a7b9b5e12d69ec1f66fea1f2765c3a208d8b2207b31`을 사용했습니다.
+
+| 요청 model | effort | 실행 | required fact | forbidden fact | 불확실성 | 한국어·kana | 결과 |
+| --- | --- | ---: | ---: | ---: | --- | --- | --- |
+| Sonnet | high | 1 | 100% | 0건 | 보존 | 한국어 있음·kana 0자 | PASS |
+| Opus | xhigh | 1 | 100% | 0건 | 보존 | 한국어 있음·kana 0자 | PASS |
+
+`--require-pass`로 채점했고 두 실행 모두 통과했습니다. 이 표는 정제한 집계이며 prompt와 원시 응답은 포함하지 않습니다. 원시 증거는 Git worktree 밖 임시 경로에 mode `0600`으로만 남겼습니다.
+
+release 시점에는 이 두 실행의 통과를 release commit과 세 SHA-256에 결합한 외부 attestation이 증명해야 합니다.

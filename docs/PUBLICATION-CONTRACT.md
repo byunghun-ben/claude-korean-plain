@@ -41,6 +41,7 @@ Only these repository-relative files are allowed:
 - `docs/EVALUATION.md`
 - `docs/RELEASE-CHECKLIST.md`
 - `docs/releases/v0.1.0.md`
+- `docs/releases/v0.2.0.md`
 
 Directories exist only to contain the allowlisted files. Empty placeholders,
 nested version-control metadata, generated archives, binaries, and release

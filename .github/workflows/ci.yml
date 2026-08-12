@@ -18,9 +18,9 @@ jobs:
         with:
           node-version: 22
       - name: Install pinned Claude Code
-        run: npm install --global @anthropic-ai/claude-code@2.1.223
+        run: npm install --global @anthropic-ai/claude-code@2.1.228
       - name: Verify exact Claude Code version
-        run: test "$(claude --version)" = "2.1.223 (Claude Code)"
+        run: test "$(claude --version)" = "2.1.228 (Claude Code)"
       - name: Validate marketplace and plugin
         run: |
           claude plugin validate --strict "$GITHUB_WORKSPACE"
