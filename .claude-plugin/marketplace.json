@@ -1,0 +1,14 @@
+{
+  "name": "claude-korean-plain",
+  "description": "A reader-first Korean output style for Claude Code that preserves facts and uncertainty.",
+  "owner": {
+    "name": "Byunghun"
+  },
+  "plugins": [
+    {
+      "name": "korean-plain",
+      "description": "Write natural, reader-first Korean without losing facts, uncertainty, or verification boundaries.",
+      "source": "./plugins/korean-plain"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+name: 응답 품질 문제
+description: Korean Plain의 재현 가능한 응답 품질 regression을 제보합니다.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        감사합니다. Secret, 인증 정보, 개인 정보, 원시 대화 transcript를 제출하지 마세요. 같은 문제를 보여 주는 최소 합성 입력을 사용해 주세요.
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code version
+      placeholder: 예: 2.1.223
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: 요청한 model과 effort를 적어 주세요.
+    validations:
+      required: true
+  - type: dropdown
+    id: regression-type
+    attributes:
+      label: Regression type
+      options:
+        - 번역투
+        - 사실 왜곡
+        - 과잉 구조
+        - 지나친 축약
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-input
+    attributes:
+      label: 재현 입력
+      description: 민감 정보를 제거한 최소 합성 입력과 재현 단계를 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 결과
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 결과
+      description: 원시 transcript 대신 문제를 설명하거나 필요한 최소 부분을 정제해 적어 주세요.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 공개 정보 확인
+      options:
+        - label: Secret, 인증 정보, 개인 정보, 원시 대화 transcript를 포함하지 않았습니다.
+          required: true

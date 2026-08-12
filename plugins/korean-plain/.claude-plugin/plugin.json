@@ -1,0 +1,16 @@
+{
+  "name": "korean-plain",
+  "description": "A natural, reader-first Korean output style that preserves facts, uncertainty, and verification boundaries.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Byunghun"
+  },
+  "homepage": "https://github.com/byunghun-ben/claude-korean-plain",
+  "repository": "https://github.com/byunghun-ben/claude-korean-plain",
+  "license": "MIT",
+  "keywords": [
+    "korean",
+    "output-style",
+    "writing"
+  ]
+}

@@ -1,0 +1,155 @@
+#!/usr/bin/expect -f
+
+# Opt-in live PTY proof. The caller provides a disposable project and checks
+# its settings after each mode. Normal Claude authentication is reused, while
+# --setting-sources project prevents user settings from participating.
+set timeout 15
+if {$argc != 4} {
+  puts stderr "usage: expect tests/config-picker.exp select|persist|reset CLAUDE PLUGIN DISPOSABLE_PROJECT"
+  exit 2
+}
+
+set mode [lindex $argv 0]
+set claude [file normalize [lindex $argv 1]]
+set plugin [file normalize [lindex $argv 2]]
+set project [file normalize [lindex $argv 3]]
+if {$mode ni {select persist reset}} {
+  puts stderr "unsupported picker mode: $mode"
+  exit 2
+}
+if {![file executable $claude] || ![file isdirectory $plugin] || ![file isdirectory $project]} {
+  puts stderr "Claude, plugin, and disposable project paths must already exist"
+  exit 2
+}
+set temp_root [file normalize $env(TMPDIR)]
+if {![string match "$temp_root/*" $project]} {
+  puts stderr "refusing to run /config outside the OS temporary directory: $project"
+  exit 2
+}
+
+unset -nocomplain env(CLAUDE_CONFIG_DIR)
+unset -nocomplain env(CLAUDE_CODE_PLUGIN_CACHE_DIR)
+set env(TERM) xterm-256color
+set env(COLUMNS) 80
+set env(LINES) 24
+set transcript [file join $project ".config-picker-$mode.log"]
+cd $project
+log_user 1
+log_file -noappend $transcript
+spawn -noecho $claude --plugin-dir $plugin --setting-sources project,local
+
+expect {
+  -nocase -re {quick.*safety.*check} {
+    expect -nocase -re {enter.*confirm}
+    send -- "\r"
+    exp_continue
+  }
+  -re {Try.*"} {}
+  timeout {
+    puts stderr "Claude did not reach its interactive prompt"
+    exit 1
+  }
+  eof {
+    puts stderr "Claude exited before /config opened"
+    exit 1
+  }
+}
+
+send -- "/config\r"
+expect {
+  -re {Search.*settings} {}
+  timeout {
+    puts stderr "/config did not open the settings search"
+    exit 1
+  }
+}
+send -- "output style"
+expect {
+  -nocase -re {Output.*style} {}
+  timeout {
+    puts stderr "Output style search did not find the picker row"
+    exit 1
+  }
+}
+if {$mode eq "persist"} {
+  expect {
+    -re {korean-plain.*Korean.*Plain} {}
+    timeout {
+      puts stderr "Fresh process did not render the persisted Korean Plain setting"
+      exit 1
+    }
+  }
+} else {
+  send -- "\033\[B"
+  after 250
+  send -- "\r"
+  expect {
+    -re {korean-plain.*Korean.*Plain} {}
+    timeout {
+      puts stderr "Output style picker did not render Korean Plain"
+      exit 1
+    }
+  }
+}
+
+if {$mode eq "select"} {
+  for {set index 0} {$index < 4} {incr index} {
+    send -- "\033\[B"
+    expect {
+      -re {❯} {}
+      timeout {
+        puts stderr "Output style cursor did not move down"
+        exit 1
+      }
+    }
+  }
+  send -- "\r"
+  after 900
+} elseif {$mode eq "persist"} {
+  # The fresh process rendered the project-local selection above.
+  after 500
+} else {
+  send -- "\033\[H"
+  after 500
+  send -- "\r"
+  after 900
+}
+
+send -- "\033\033\033"
+after 500
+if {$mode eq "persist"} {
+  send -- "/clear\r"
+  expect {
+    -re {Try.*"} {}
+    timeout { after 700 }
+  }
+}
+send -- "/exit\r"
+expect {
+  eof {}
+  timeout {
+    send -- "\003"
+    after 250
+    send -- "\003"
+    expect {
+      eof {}
+      timeout {
+        puts stderr "Claude did not exit after /exit and Ctrl-C fallback"
+        exit 1
+      }
+    }
+  }
+}
+log_file
+
+set channel [open $transcript r]
+set output [read $channel]
+close $channel
+if {$mode in {select persist}} {
+  if {[string first "korean-plain" $output] < 0 || [string first "Korean" $output] < 0 || [string first "Plain" $output] < 0} {
+    puts stderr "$mode did not visibly render the Korean Plain output style"
+    exit 1
+  }
+}
+file delete -force $transcript
+puts "CONFIG_PICKER_[string toupper $mode]_OK"
