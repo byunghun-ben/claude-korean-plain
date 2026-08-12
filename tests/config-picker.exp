@@ -33,6 +33,22 @@ set env(TERM) xterm-256color
 set env(COLUMNS) 80
 set env(LINES) 24
 set transcript [file join $project ".config-picker-$mode.log"]
+set local_settings [file join $project ".claude" "settings.local.json"]
+
+# Rendering alone does not prove the picker did anything: a run whose keys
+# arrive while the list is still loading draws the right screen and changes
+# nothing. Each mode therefore states what the project-local setting must
+# look like before it starts and after it finishes.
+proc selected {} {
+  global local_settings
+  if {![file exists $local_settings]} {
+    return 0
+  }
+  set channel [open $local_settings r]
+  set data [read $channel]
+  close $channel
+  return [regexp {"outputStyle"\s*:\s*"korean-plain:Korean Plain"} $data]
+}
 
 # The transcript holds raw output of an authenticated session. Create it with
 # restricted permissions before anything is written, and remove it on every
@@ -43,6 +59,15 @@ proc fail {message} {
   file delete -force $transcript
   puts stderr $message
   exit 1
+}
+
+if {$mode eq "select" && [selected]} {
+  puts stderr "select must start from a project that has not selected Korean Plain"
+  exit 2
+}
+if {$mode eq "persist" && ![selected]} {
+  puts stderr "persist must start from a project that already selected Korean Plain"
+  exit 2
 }
 
 close [open $transcript w]
@@ -148,6 +173,9 @@ set output [read $channel]
 close $channel
 if {[string first "korean-plain" $output] < 0 || [string first "Korean" $output] < 0 || [string first "Plain" $output] < 0} {
   fail "$mode did not visibly render the Korean Plain output style"
+}
+if {![selected]} {
+  fail "$mode rendered the picker but left Korean Plain unselected in $local_settings"
 }
 file delete -force $transcript
 puts "CONFIG_PICKER_[string toupper $mode]_OK"

@@ -50,7 +50,7 @@ case ID는 fixture의 현재 값을 사용해야 합니다. 원시 model output�
 
 output style이 Claude Code에 등록됐는지는 결정적 검사로 확인하지 않습니다. 확인한 Claude Code(2.1.228)에서 `claude plugin details`의 component inventory는 skill, agent, hook, MCP server, LSP server만 출력했고, `claude plugin list --json`도 output style을 반환하지 않았습니다. 모델을 호출하지 않고 등록 여부를 확인할 CLI 경로를 찾지 못했습니다.
 
-설치 E2E는 plugin이 설치되고 다른 component가 없다는 것까지만 확인합니다. `/config` 목록에 실제로 나타나는지는 `tests/config-picker.exp`의 opt-in 증명으로 확인하며, 이 증명은 인증된 세션이 필요해 CI에서 실행하지 않습니다.
+설치 E2E는 plugin이 설치되고 다른 component가 없다는 것까지만 확인합니다. `/config` 목록에 실제로 나타나는지는 `tests/config-picker.exp`의 opt-in 증명으로 확인하며, 이 증명은 인증된 세션이 필요해 CI에서 실행하지 않습니다. 각 mode는 화면 출력뿐 아니라 project-local 설정에 기록된 값도 확인합니다. 화면만 맞고 아무것도 바뀌지 않은 실행은 통과하지 못합니다.
 
 `tests/plugin-contract.test.mjs`가 style 파일의 경로와 SHA-256을 고정하므로 파일이 실수로 옮겨지거나 바뀌는 것은 막힙니다. 다만 Claude Code가 그 경로를 읽는다는 것은 고정 버전에서 관찰한 동작이며 결정적 검사로 증명하지 않습니다.
 
