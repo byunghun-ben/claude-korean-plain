@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 
 const REPOSITORY_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const EXPECTED_STYLE_SHA256 =
-  "5e0c11b8381a7ed5f4126ecae1407545f0979269200664738c35089f23a2e76c";
+  "8485edaf14ff512d6cc30d201efb7d24b3259bfffa0aefbe3c1e136a5b1c228b";
 const ALLOWED_PLUGIN_PATHS = new Set([
   ".claude-plugin",
   ".claude-plugin/plugin.json",
@@ -116,7 +116,7 @@ function validateContract(repositoryRoot) {
     "plugin manifest",
   );
   assert.equal(manifest.name, "korean-plain");
-  assert.equal(manifest.version, "0.1.1", "plugin manifest version must be 0.1.1");
+  assert.equal(manifest.version, "0.2.0", "plugin manifest version must be 0.2.0");
   assert(manifest.description.trim(), "plugin description must not be empty");
   assert.deepEqual(manifest.author, { name: "Byunghun" });
   assert.equal(manifest.homepage, "https://github.com/byunghun-ben/claude-korean-plain");
@@ -126,11 +126,11 @@ function validateContract(repositoryRoot) {
 
   const style = readFileSync(stylePath, "utf8");
   const frontmatter = parseFrontmatter(style);
-  assert(!("force-for-plugin" in frontmatter), "force-for-plugin is prohibited");
-  assertExactKeys(frontmatter, ["name", "description", "keep-coding-instructions"], "style frontmatter");
+  assertExactKeys(frontmatter, ["name", "description", "keep-coding-instructions", "force-for-plugin"], "style frontmatter");
   assert.equal(frontmatter.name, "Korean Plain");
   assert(frontmatter.description.trim(), "style description must not be empty");
   assert.equal(frontmatter["keep-coding-instructions"], "true");
+  assert.equal(frontmatter["force-for-plugin"], "true", "the style must apply while the plugin is enabled");
   assert.equal(createHash("sha256").update(style).digest("hex"), EXPECTED_STYLE_SHA256, "style SHA-256 must match the seed");
 
   walkPlugin(pluginRoot);
@@ -183,20 +183,20 @@ negativeCase(
   (root) => {
     const path = join(root, "plugins", "korean-plain", ".claude-plugin", "plugin.json");
     const manifest = readJson(path);
-    manifest.version = "0.1.2";
+    manifest.version = "0.2.1";
     writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
   },
-  /version must be 0\.1\.1/,
+  /version must be 0\.2\.0/,
 );
 
 negativeCase(
-  "force-for-plugin",
+  "missing force-for-plugin",
   (root) => {
     const path = join(root, "plugins", "korean-plain", "output-styles", "korean-plain.md");
-    const style = readFileSync(path, "utf8").replace("keep-coding-instructions: true", "keep-coding-instructions: true\nforce-for-plugin: true");
+    const style = readFileSync(path, "utf8").replace("\nforce-for-plugin: true", "");
     writeFileSync(path, style);
   },
-  /force-for-plugin is prohibited/,
+  /style frontmatter has unexpected or missing fields/,
 );
 
 negativeCase(

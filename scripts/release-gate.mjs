@@ -180,14 +180,13 @@ function readJson(filePath) {
   return value;
 }
 
-function assertPickerSettings(filePath, selected) {
+function assertPickerSettings(filePath) {
   const value = readJson(filePath);
   if (JSON.stringify(value.localSentinel) !== JSON.stringify({ preserve: true })) throw new Error("Picker changed sentinel settings");
   const keys = Object.keys(value).sort();
   const expectedKeys = ["localSentinel", "outputStyle"];
   if (JSON.stringify(keys) !== JSON.stringify(expectedKeys.sort())) throw new Error("Picker changed unexpected settings");
-  if (selected && value.outputStyle !== STYLE_SETTING_VALUE) throw new Error("Picker selected an unexpected output style");
-  if (!selected && value.outputStyle !== "default") throw new Error("Picker did not restore the Default output style");
+  if (value.outputStyle !== STYLE_SETTING_VALUE) throw new Error("Picker selected an unexpected output style");
 }
 
 async function runAuthenticatedConfigPicker(repo, claudeBin, statuses) {
@@ -201,10 +200,12 @@ async function runAuthenticatedConfigPicker(repo, claudeBin, statuses) {
   try {
     fs.mkdirSync(path.dirname(localSettings), { recursive: true, mode: 0o700 });
     fs.writeFileSync(localSettings, `${JSON.stringify({ localSentinel: { preserve: true } }, null, 2)}\n`, { mode: 0o600 });
-    for (const mode of ["select", "persist", "reset"]) {
+    // Restoring Default in /config is no longer the off switch: the style sets
+    // force-for-plugin, so disabling the plugin is. The install E2E covers that.
+    for (const mode of ["select", "persist"]) {
       const output = await requireCommand(`config-picker-${mode}`, "/usr/bin/expect", [picker, mode, claudeBin, path.join(repo, "plugins", "korean-plain"), project], repo, statuses);
       if (!output.includes(`CONFIG_PICKER_${mode.toUpperCase()}_OK`)) throw new Error(`config-picker-${mode}`);
-      assertPickerSettings(localSettings, mode !== "reset");
+      assertPickerSettings(localSettings);
     }
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });

@@ -6,8 +6,8 @@
 - [ ] marketplace root와 plugin directory가 `claude plugin validate --strict`를 통과한다.
 - [ ] plugin tree가 manifest와 output style만 포함하며 symlink나 실행 파일이 없다.
 - [ ] 모든 결정적 contract test와 합성 fixture 평가가 통과한다.
-- [ ] 격리된 user scope와 project scope에서 설치, `/config` 선택, `/clear`, `Default` 복귀, disable, uninstall, marketplace remove를 검증한다.
-- [ ] 설치 전후 diff에서 installer-managed marketplace 선언과 `enabledPlugins`, 사용자가 선택한 `outputStyle`을 구분한다.
+- [ ] 격리된 user scope와 project scope에서 설치, 선택 없이 자동 적용, `/clear`, disable 후 해제, uninstall, marketplace remove를 검증한다.
+- [ ] 설치 전후 diff에서 installer-managed marketplace 선언과 `enabledPlugins`만 바뀌고 `outputStyle`은 설치기가 쓰지 않음을 확인한다.
 - [ ] working tree와 전체 Git history, commit message, annotated tag, tag archive의 공개 allowlist와 민감 정보 검사가 통과한다.
 - [ ] Claude Code 2.1.223에서 대표 모델 실행을 opt-in으로 수행하고 정제 집계만 기록한다.
 - [ ] 원시 model output과 임시 evidence가 Git 추적 대상 밖에 있고 mode `0600`인지 확인한다.

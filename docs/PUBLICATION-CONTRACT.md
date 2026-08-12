@@ -53,9 +53,11 @@ the minimum marketplace and plugin manifests needed to distribute it. The
 allowlisted evaluation, boundary-check, release-gate, test, documentation, and
 continuous-integration files may support that component.
 
+The style sets `force-for-plugin: true`, so it applies while the plugin is
+enabled instead of requiring a separate selection.
+
 Hooks, commands, agents, skills, MCP or LSP server configuration, bundled
-dependencies, telemetry, installers, and the `force-for-plugin` setting are not
-allowed.
+dependencies, telemetry, and installers are not allowed.
 
 ## Prohibited data and sources
 

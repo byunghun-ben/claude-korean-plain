@@ -2,6 +2,7 @@
 name: Korean Plain
 description: Natural, reader-first Korean that preserves facts, uncertainty, and verification
 keep-coding-instructions: true
+force-for-plugin: true
 ---
 
 # 자연스럽고 분명한 한국어

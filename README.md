@@ -20,17 +20,23 @@ claude plugin marketplace add https://github.com/byunghun-ben/claude-korean-plai
 claude plugin install korean-plain@claude-korean-plain --scope project
 ```
 
-scope에 따라 설치기가 관리하는 marketplace 선언과 `enabledPlugins`는 user 설정(`~/.claude/settings.json`) 또는 project 설정(`.claude/settings.json`)에 기록될 수 있습니다. 이것은 아래의 output style 선택과 별개의 변경입니다.
+scope에 따라 설치기가 관리하는 marketplace 선언과 `enabledPlugins`는 user 설정(`~/.claude/settings.json`) 또는 project 설정(`.claude/settings.json`)에 기록될 수 있습니다.
 
-## 선택과 적용
+## 적용과 해제
 
-1. Claude Code를 열고 `/config`를 실행합니다.
-2. Output style에서 `Korean Plain`을 명시적으로 선택합니다.
-3. `/clear`로 대화를 비우거나 새 세션을 시작합니다.
+설치하고 `/clear`로 대화를 비우거나 새 세션을 시작하면 적용됩니다. `/config`에서 따로 고를 필요가 없습니다.
 
-선택 결과로 `outputStyle` 설정이 기록될 수 있습니다. 설치 자체가 output style을 선택하지는 않습니다. 이 플러그인은 `force-for-plugin`을 사용하지 않습니다.
+이 플러그인은 `force-for-plugin: true`를 사용합니다. 플러그인이 켜져 있는 동안 이 style이 자동으로 적용되고, `/config`에서 고른 output style보다 우선합니다. `outputStyle` 설정을 `Default`로 두어도 이 style이 적용됩니다. 설치가 `outputStyle` 설정을 대신 바꾸지는 않습니다. 적용은 설정 파일이 아니라 실행 중에 일어납니다.
 
-기본 스타일로 돌아가려면 `/config`의 Output style에서 `Default`를 선택한 다음 `/clear` 또는 새 세션을 사용합니다.
+끄는 방법은 플러그인을 비활성화하는 것입니다. 그 뒤 `/clear` 또는 새 세션을 사용합니다.
+
+```sh
+claude plugin disable korean-plain@claude-korean-plain --scope user
+```
+
+여러 플러그인이 같은 방식으로 output style을 강제하면 먼저 로드된 것이 적용됩니다.
+
+`/config`의 Output style 항목은 저장된 설정값을 보여 줍니다. 이 플러그인이 켜져 있으면 그 값이 `Default`여도 실제로는 이 style이 적용되므로, 화면에 보이는 값과 실제 적용이 다를 수 있습니다.
 
 ## 답변 변화 예시
 
@@ -45,12 +51,12 @@ scope에 따라 설치기가 관리하는 marketplace 선언과 `enabledPlugins`
 
 ## 적용 범위와 한계
 
-- Korean Plain은 skill이 아니므로 호출할 slash command가 없습니다. `/config`에서 고르는 output style입니다.
+- Korean Plain은 skill이 아니므로 호출할 slash command가 없습니다. 플러그인이 켜져 있는 동안 적용되는 output style입니다.
 - 사용자가 다른 언어를 요청하지 않는 한 한국어로 답합니다. 영어로 질문해도 한국어 답이 옵니다.
 - `keep-coding-instructions: true`를 사용하므로 Claude Code의 코딩 관련 기본 지침은 그대로 유지됩니다.
-- 선택한 style은 주 대화의 system prompt를 바꿉니다. 일반 subagent에는 적용되지 않습니다. 다만 부모 대화를 fork한 agent는 부모 system prompt를 상속합니다.
+- 이 style은 주 대화의 system prompt를 바꿉니다. 일반 subagent에는 적용되지 않습니다. 다만 부모 대화를 fork한 agent는 부모 system prompt를 상속합니다.
 - global `CLAUDE.md`, permissions, hooks, MCP 설정을 추가하거나 변경하지 않습니다.
-- 설치기는 선택한 scope의 marketplace 선언과 `enabledPlugins`를 관리합니다. 사용자가 `/config`에서 선택할 때만 `outputStyle`이 별도로 바뀝니다.
+- 설치기는 선택한 scope의 marketplace 선언과 `enabledPlugins`를 관리합니다. `outputStyle` 설정은 사용자가 `/config`에서 직접 바꿀 때만 기록되며, 이 플러그인이 켜져 있는 동안에는 그 값이 적용되지 않습니다.
 - 더 짧은 답이 아니라, 독자가 먼저 이해할 수 있고 사실과 불확실성을 잃지 않는 한국어를 목표로 합니다.
 
 ## 비활성화와 제거
@@ -71,7 +77,7 @@ claude plugin uninstall korean-plain@claude-korean-plain --scope project
 claude plugin marketplace remove claude-korean-plain --scope project
 ```
 
-비활성화는 설치 상태를 남깁니다. uninstall은 플러그인을 제거하고, marketplace remove는 marketplace 선언을 제거합니다. `/config`에서 고른 `outputStyle`은 별도 사용자 선택이므로 필요하면 먼저 `Default`로 되돌립니다.
+비활성화만 해도 style은 더 이상 적용되지 않고 설치 상태는 남습니다. uninstall은 플러그인을 제거하고, marketplace remove는 marketplace 선언을 제거합니다. `/config`에 남아 있던 `outputStyle` 값은 이 플러그인을 끈 뒤부터 다시 적용됩니다.
 
 ## 개발
 

@@ -5,7 +5,7 @@
 # --setting-sources project prevents user settings from participating.
 set timeout 15
 if {$argc != 4} {
-  puts stderr "usage: expect tests/config-picker.exp select|persist|reset CLAUDE PLUGIN DISPOSABLE_PROJECT"
+  puts stderr "usage: expect tests/config-picker.exp select|persist CLAUDE PLUGIN DISPOSABLE_PROJECT"
   exit 2
 }
 
@@ -13,7 +13,7 @@ set mode [lindex $argv 0]
 set claude [file normalize [lindex $argv 1]]
 set plugin [file normalize [lindex $argv 2]]
 set project [file normalize [lindex $argv 3]]
-if {$mode ni {select persist reset}} {
+if {$mode ni {select persist}} {
   puts stderr "unsupported picker mode: $mode"
   exit 2
 }
@@ -112,14 +112,9 @@ if {$mode eq "select"} {
   }
   send -- "\r"
   after 900
-} elseif {$mode eq "persist"} {
+} else {
   # The fresh process rendered the project-local selection above.
   after 500
-} else {
-  send -- "\033\[H"
-  after 500
-  send -- "\r"
-  after 900
 }
 
 send -- "\033\033\033"
@@ -151,10 +146,8 @@ log_file
 set channel [open $transcript r]
 set output [read $channel]
 close $channel
-if {$mode in {select persist}} {
-  if {[string first "korean-plain" $output] < 0 || [string first "Korean" $output] < 0 || [string first "Plain" $output] < 0} {
-    fail "$mode did not visibly render the Korean Plain output style"
-  }
+if {[string first "korean-plain" $output] < 0 || [string first "Korean" $output] < 0 || [string first "Plain" $output] < 0} {
+  fail "$mode did not visibly render the Korean Plain output style"
 }
 file delete -force $transcript
 puts "CONFIG_PICKER_[string toupper $mode]_OK"

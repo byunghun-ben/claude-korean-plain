@@ -41,7 +41,8 @@ function validate(root) {
     "claude plugin marketplace remove",
     "enabledPlugins",
     "outputStyle",
-    "force-for-plugin",
+    "force-for-plugin: true",
+    "claude plugin disable korean-plain@claude-korean-plain --scope user",
     "subagent",
     "fork",
     "system prompt",
@@ -62,6 +63,8 @@ function validate(root) {
   assert.match(readme, /user 설정\(`~\/\.claude\/settings\.json`\)/);
   assert.match(readme, /project 설정\(`\.claude\/settings\.json`\)/);
   assert.match(readme, /일반 subagent에는 적용되지 않습니다/);
+  assert.match(readme, /`\/config`에서 따로 고를 필요가 없습니다/);
+  assert.match(readme, /끄는 방법은 플러그인을 비활성화하는 것입니다/);
   assert.match(readme, /fork한 agent는 부모 system prompt를 상속합니다/);
 
   const evaluation = text(root, "docs/EVALUATION.md");
@@ -86,7 +89,7 @@ function validate(root) {
   const forbidden = [
     /settings\.json을 (?:전혀 |절대 )?(?:수정하지|바꾸지)/,
     /최소 지원 버전/,
-    /force-for-plugin:\s*true/,
+    /설치 자체가 output style을 선택하지는 않습니다/,
   ];
   for (const pattern of forbidden) assert.doesNotMatch(publicDocs, pattern, `public documentation contains a forbidden claim: ${pattern}`);
 }

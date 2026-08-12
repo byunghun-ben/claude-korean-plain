@@ -60,10 +60,6 @@ if {$mode eq "select"} {
   close $handle
 } elseif {$mode eq "persist"} {
   # A real picker process performs /clear; this deterministic fixture preserves the selected state.
-} elseif {$mode eq "reset"} {
-  set handle [open $settings "w"]
-  puts $handle {{"localSentinel":{"preserve":true},"outputStyle":"default"}}
-  close $handle
 } else { exit 2 }
 puts "CONFIG_PICKER_[string toupper $mode]_OK"
 `);
