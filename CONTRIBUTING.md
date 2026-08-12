@@ -19,6 +19,17 @@ node tests/docs-contract.test.mjs
 
 테스트를 삭제하거나 assertion을 약하게 만들어 통과시키지 않습니다. 모델 실행은 선택 사항이며 결정적 검사를 대신하지 않습니다. 실행 방법과 증거 취급은 [docs/EVALUATION.md](docs/EVALUATION.md)를 따릅니다.
 
+## 검증 환경
+
+`node tests/run-all.mjs`의 결정적 검사는 Claude Code 없이 실행됩니다. 뒤에 이어지는 설치 E2E는 Claude Code `2.1.223`에 고정돼 있고 CI가 같은 버전을 설치합니다. 다른 버전이 잡히면 결정적 검사까지 실행한 뒤, 설치 E2E는 실행하지 않고 안내와 함께 종료합니다.
+
+```sh
+npm install --global @anthropic-ai/claude-code@2.1.223
+CLAUDE_BIN=/absolute/path/to/claude node tests/run-all.mjs
+```
+
+고정 버전을 올리려면 대표 모델 실행과 attestation을 다시 만들어야 하므로 별도 issue에서 진행합니다.
+
 ## 문서와 배포 변경
 
 - 공개 명령, 설정 범위, 지원 범위가 바뀌면 README와 문서 계약 테스트를 함께 고칩니다.

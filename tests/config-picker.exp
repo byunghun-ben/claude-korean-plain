@@ -33,6 +33,20 @@ set env(TERM) xterm-256color
 set env(COLUMNS) 80
 set env(LINES) 24
 set transcript [file join $project ".config-picker-$mode.log"]
+
+# The transcript holds raw output of an authenticated session. Create it with
+# restricted permissions before anything is written, and remove it on every
+# exit path.
+proc fail {message} {
+  global transcript
+  log_file
+  file delete -force $transcript
+  puts stderr $message
+  exit 1
+}
+
+close [open $transcript w]
+file attributes $transcript -permissions 0600
 cd $project
 log_user 1
 log_file -noappend $transcript
@@ -46,12 +60,10 @@ expect {
   }
   -re {Try.*"} {}
   timeout {
-    puts stderr "Claude did not reach its interactive prompt"
-    exit 1
+    fail "Claude did not reach its interactive prompt"
   }
   eof {
-    puts stderr "Claude exited before /config opened"
-    exit 1
+    fail "Claude exited before /config opened"
   }
 }
 
@@ -59,24 +71,21 @@ send -- "/config\r"
 expect {
   -re {Search.*settings} {}
   timeout {
-    puts stderr "/config did not open the settings search"
-    exit 1
+    fail "/config did not open the settings search"
   }
 }
 send -- "output style"
 expect {
   -nocase -re {Output.*style} {}
   timeout {
-    puts stderr "Output style search did not find the picker row"
-    exit 1
+    fail "Output style search did not find the picker row"
   }
 }
 if {$mode eq "persist"} {
   expect {
     -re {korean-plain.*Korean.*Plain} {}
     timeout {
-      puts stderr "Fresh process did not render the persisted Korean Plain setting"
-      exit 1
+      fail "Fresh process did not render the persisted Korean Plain setting"
     }
   }
 } else {
@@ -86,8 +95,7 @@ if {$mode eq "persist"} {
   expect {
     -re {korean-plain.*Korean.*Plain} {}
     timeout {
-      puts stderr "Output style picker did not render Korean Plain"
-      exit 1
+      fail "Output style picker did not render Korean Plain"
     }
   }
 }
@@ -98,8 +106,7 @@ if {$mode eq "select"} {
     expect {
       -re {❯} {}
       timeout {
-        puts stderr "Output style cursor did not move down"
-        exit 1
+        fail "Output style cursor did not move down"
       }
     }
   }
@@ -134,8 +141,7 @@ expect {
     expect {
       eof {}
       timeout {
-        puts stderr "Claude did not exit after /exit and Ctrl-C fallback"
-        exit 1
+        fail "Claude did not exit after /exit and Ctrl-C fallback"
       }
     }
   }
@@ -147,8 +153,7 @@ set output [read $channel]
 close $channel
 if {$mode in {select persist}} {
   if {[string first "korean-plain" $output] < 0 || [string first "Korean" $output] < 0 || [string first "Plain" $output] < 0} {
-    puts stderr "$mode did not visibly render the Korean Plain output style"
-    exit 1
+    fail "$mode did not visibly render the Korean Plain output style"
   }
 }
 file delete -force $transcript
