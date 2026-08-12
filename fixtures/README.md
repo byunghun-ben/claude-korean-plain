@@ -4,6 +4,8 @@
 
 Each case declares facts that must remain, claims that must not appear, allowed English terms, and the dimensions a reviewer may score. Cases that contain unknown information also declare acceptable uncertainty language. The deterministic scorer treats a missing fact, forbidden claim, lost uncertainty, missing Korean text, or Japanese kana as a failure.
 
+A claim whose wording varies too much for a literal string — an invented figure, for example — is declared in the optional `forbiddenPatterns` list instead. Those entries are regular expression sources matched case-insensitively against the response, and fixture validation rejects one that does not compile. Required-fact patterns must be at least two characters long, because a single character matches incidental letters and syllables.
+
 Validation and scoring do not contact a model or the network:
 
 ```sh

@@ -17,7 +17,7 @@
       "prompt": "수정 현황을 팀에 알려줘. 결제 오류 수정과 자동 테스트 18개는 끝났지만, iOS 실제 기기 확인은 아직이야.",
       "requiredFacts": [
         { "id": "fix", "patterns": ["결제 오류", "수정"] },
-        { "id": "tests", "patternGroups": [["18"], ["통과", "완료", "끝"]] },
+        { "id": "tests", "patternGroups": [["18"], ["통과", "완료", "끝났"]] },
         { "id": "device-gap", "patterns": ["iOS", "실제 기기", "아직"] }
       ],
       "forbiddenFacts": ["스토어 승인 완료", "실제 기기 검증 완료"],
@@ -62,7 +62,7 @@
       "requiredFacts": [
         { "id": "choice", "patterns": ["최대 2회"] },
         { "id": "reason", "patterns": ["중복 발송", "위험"] },
-        { "id": "deferred", "patterns": ["재시도 간격", "예시 데이터", "정"] }
+        { "id": "deferred", "patternGroups": [["재시도 간격"], ["예시 데이터"], ["정합니다", "정한다", "정하기", "정할", "결정", "보류", "미정"]] }
       ],
       "forbiddenFacts": ["재시도 간격은 5분", "무제한 재시도"],
       "allowedEnglish": [],
@@ -122,6 +122,12 @@
         { "id": "topic", "patterns": ["자동화", "확인 비용"] }
       ],
       "forbiddenFacts": ["제가 현장에서 겪었을 때", "우리 팀은 30% 줄였다", "반나절이면 끝났다"],
+      "forbiddenPatterns": [
+        "[0-9]+\\s*(?:%|퍼센트|배|분|시간|일|주|개월|년)",
+        "반나절",
+        "(?:저희|우리)\\s*(?:팀|회사)[^.\\n]{0,20}(?:줄였|늘렸|겪었|경험)",
+        "제가\\s*[^.\\n]{0,15}(?:겪었|해\\s*봤|경험했)"
+      ],
       "allowedEnglish": [],
       "mustExpressUncertainty": false,
       "uncertaintyPatterns": [],
@@ -132,8 +138,8 @@
       "category": "recommendation",
       "prompt": "두 가상 방안을 비교해줘. A는 이번 주 적용할 수 있지만 수동 확인이 필요하고, B는 자동화되지만 2주 개발이 필요해. 현재 목표는 이번 주 위험을 줄이는 거야.",
       "requiredFacts": [
-        { "id": "a", "patterns": ["A", "이번 주", "수동 확인"] },
-        { "id": "b", "patterns": ["B", "자동화", "2주"] },
+        { "id": "a", "patternGroups": [["A안", "A는", "A가", "A를", "방안 A", "A 방안"], ["이번 주"], ["수동 확인"]] },
+        { "id": "b", "patternGroups": [["B안", "B는", "B가", "B를", "방안 B", "B 방안"], ["자동화"], ["2주"]] },
         { "id": "goal", "patterns": ["이번 주", "위험"] }
       ],
       "forbiddenFacts": ["B는 즉시 적용", "A는 완전 자동화"],

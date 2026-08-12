@@ -20,10 +20,13 @@ const KNOWN_DIMENSIONS = new Set([
 ]);
 const GLOBAL_ALLOWED_ENGLISH = new Set(["api", "ci", "ios", "sha", "json"]);
 const CASE_KEYS = new Set([
-  "id", "category", "prompt", "requiredFacts", "forbiddenFacts", "allowedEnglish",
+  "id", "category", "prompt", "requiredFacts", "forbiddenFacts", "forbiddenPatterns", "allowedEnglish",
   "mustExpressUncertainty", "uncertaintyPatterns", "rubricDimensions"
 ]);
 const FACT_KEYS = new Set(["id", "patterns", "patternGroups"]);
+// A one-character pattern matches incidental letters and syllables, so a fact
+// built from one would pass on responses that never state it.
+const MINIMUM_PATTERN_LENGTH = 2;
 
 function usage(exitCode = 0) {
   const message = `Usage:
@@ -92,6 +95,23 @@ function nonEmptyStrings(value) {
   return Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === "string" && item.length > 0);
 }
 
+function shortPatterns(fact) {
+  const groups = fact?.patternGroups ?? (fact?.patterns ? [fact.patterns] : []);
+  if (!Array.isArray(groups)) return [];
+  return groups.flat().filter((pattern) => typeof pattern === "string" && pattern.trim().length < MINIMUM_PATTERN_LENGTH);
+}
+
+function invalidRegExpSources(sources) {
+  return sources.filter((source) => {
+    try {
+      new RegExp(source, "i");
+      return false;
+    } catch {
+      return true;
+    }
+  });
+}
+
 export function validateFixtures(data) {
   const errors = [];
   if (!data || data.version !== 1) errors.push("version must be 1");
@@ -129,8 +149,21 @@ export function validateFixtures(data) {
       const hasGroups = Array.isArray(fact?.patternGroups) && fact.patternGroups.length > 0 &&
         fact.patternGroups.every(nonEmptyStrings);
       if (hasPatterns === hasGroups) errors.push(`${factAt} must have exactly one of patterns or patternGroups`);
+      const short = shortPatterns(fact);
+      if (short.length) {
+        errors.push(`${factAt} has patterns shorter than ${MINIMUM_PATTERN_LENGTH} characters: ${short.join(", ")}`);
+      }
     }
     if (!nonEmptyStrings(testCase?.forbiddenFacts)) errors.push(`${at}.forbiddenFacts must contain non-empty strings`);
+    if (testCase?.forbiddenPatterns !== undefined) {
+      if (!nonEmptyStrings(testCase.forbiddenPatterns) ||
+          new Set(testCase.forbiddenPatterns).size !== testCase.forbiddenPatterns.length) {
+        errors.push(`${at}.forbiddenPatterns must contain unique non-empty strings`);
+      } else {
+        const invalid = invalidRegExpSources(testCase.forbiddenPatterns);
+        if (invalid.length) errors.push(`${at}.forbiddenPatterns has invalid regular expressions: ${invalid.join(", ")}`);
+      }
+    }
     if (!Array.isArray(testCase?.allowedEnglish) || testCase.allowedEnglish.some((item) => typeof item !== "string" || !item)) {
       errors.push(`${at}.allowedEnglish must contain only non-empty strings`);
     }
@@ -170,7 +203,11 @@ function stripTechnicalSpans(text) {
 
 function countUnnecessaryEnglish(text, allowedEnglish) {
   let cleaned = stripTechnicalSpans(text);
-  for (const term of allowedEnglish) cleaned = cleaned.replace(new RegExp(escapeRegExp(term), "gi"), " ");
+  // Without the boundaries an allowed term such as "A" also deletes the "a" in
+  // "Bash", leaving fragments that are then counted as unnecessary English.
+  for (const term of allowedEnglish) {
+    cleaned = cleaned.replace(new RegExp(`(?<![A-Za-z0-9_-])${escapeRegExp(term)}(?![A-Za-z0-9_-])`, "gi"), " ");
+  }
   const tokens = cleaned.match(/[A-Za-z][A-Za-z0-9_-]*/g) || [];
   const unnecessary = tokens.filter((token) => !GLOBAL_ALLOWED_ENGLISH.has(token.toLowerCase()));
   return { count: unnecessary.length, tokens: [...new Set(unnecessary.map((token) => token.toLowerCase()))] };
@@ -188,6 +225,7 @@ export function scoreOutput(testCase, output) {
   const text = String(output ?? "");
   const required = testCase.requiredFacts.map((fact) => ({ id: fact.id, present: factPresent(text, fact) }));
   const forbiddenMatches = testCase.forbiddenFacts.filter((fact) => normalize(text).includes(normalize(fact)));
+  const forbiddenPatternMatches = (testCase.forbiddenPatterns ?? []).filter((source) => new RegExp(source, "i").test(text));
   const lines = text.split(/\r?\n/);
   const koreanChars = (text.match(/[가-힣]/g) || []).length;
   const kanaChars = (text.match(/[\u3040-\u30ff]/g) || []).length;
@@ -214,9 +252,11 @@ export function scoreOutput(testCase, output) {
       requiredFactRetention: required.length ? (required.length - missingRequired.length) / required.length : 0,
       missingRequired,
       forbiddenMatches,
+      forbiddenPatternMatches,
       uncertaintyPresent
     },
-    absolutePass: missingRequired.length === 0 && forbiddenMatches.length === 0 && uncertaintyPresent && koreanChars > 0 && kanaChars === 0
+    absolutePass: missingRequired.length === 0 && forbiddenMatches.length === 0 && forbiddenPatternMatches.length === 0 &&
+      uncertaintyPresent && koreanChars > 0 && kanaChars === 0
   };
 }
 
@@ -719,4 +759,6 @@ async function main() {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) await main();
+// process.argv[1] is absent under `node -e`, where this module is imported for
+// its exports rather than run as the CLI.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

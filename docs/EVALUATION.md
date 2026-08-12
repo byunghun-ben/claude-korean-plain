@@ -12,7 +12,7 @@ node tests/evaluate.test.mjs
 node scripts/evaluate.mjs score --responses /path/to/responses.json
 ```
 
-평가기에는 누락·중복 run, 알 수 없는 case, required fact 손실, forbidden fact 생성, 불확실성 손실, 일본어 kana 유출을 거부하는 검사가 있습니다. 구조와 불필요한 영어는 관찰 지표로 남기되 사실 보존의 절대 통과 조건과 섞지 않습니다.
+평가기에는 누락·중복 run, 알 수 없는 case, required fact 손실, forbidden fact 생성, 금지 패턴 일치, 불확실성 손실, 일본어 kana 유출을 거부하는 검사가 있습니다. 지어낸 수치처럼 표현이 일정하지 않은 주장은 문자열 대신 case의 `forbiddenPatterns` 정규식으로 막습니다. 구조와 불필요한 영어는 관찰 지표로 남기되 사실 보존의 절대 통과 조건과 섞지 않습니다.
 
 ## 선택적인 유료 모델 실행
 

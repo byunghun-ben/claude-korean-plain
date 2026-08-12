@@ -75,6 +75,22 @@ const emptyForbidden = structuredClone(fixtures);
 emptyForbidden.cases[0].forbiddenFacts = [];
 assert(module.validateFixtures(emptyForbidden).some((error) => error.includes("forbiddenFacts")));
 
+const shortPattern = structuredClone(fixtures);
+shortPattern.cases[0].requiredFacts[0].patterns = ["A", "수정"];
+assert(module.validateFixtures(shortPattern).some((error) => error.includes("shorter than")));
+
+const shortGroupPattern = structuredClone(fixtures);
+shortGroupPattern.cases[0].requiredFacts[1].patternGroups[0] = ["정"];
+assert(module.validateFixtures(shortGroupPattern).some((error) => error.includes("shorter than")));
+
+const invalidForbiddenPattern = structuredClone(fixtures);
+invalidForbiddenPattern.cases[0].forbiddenPatterns = ["("];
+assert(module.validateFixtures(invalidForbiddenPattern).some((error) => error.includes("invalid regular expressions")));
+
+const duplicateForbiddenPattern = structuredClone(fixtures);
+duplicateForbiddenPattern.cases[0].forbiddenPatterns = ["반나절", "반나절"];
+assert(module.validateFixtures(duplicateForbiddenPattern).some((error) => error.includes("forbiddenPatterns")));
+
 const qaCase = fixtures.cases.find((item) => item.id === "qa-gap");
 const goodText = "결제 오류는 수정했습니다. 자동 테스트 18개는 통과했습니다. iOS 실제 기기 확인은 아직입니다.";
 const goodScore = module.scoreOutput(qaCase, goodText);
@@ -108,6 +124,29 @@ const noKorean = module.scoreOutput(qaCase, "iOS 18 PASS");
 assert.equal(noKorean.koreanPresent, false);
 assert.equal(noKorean.absolutePass, false);
 
+const inventedCase = fixtures.cases.find((item) => item.id === "no-invented-experience");
+const invented = module.scoreOutput(inventedCase, "작은 자동화는 확인 비용을 줄입니다. 저희 팀은 검토 시간을 40퍼센트 줄였고, 반나절 걸리던 작업이 20분으로 끝났습니다.");
+assert.equal(invented.absolutePass, false, "invented figures must fail even when no forbidden string matches");
+assert.deepEqual(invented.facts.forbiddenMatches, [], "the counterexample must be caught by patterns, not by literal strings");
+assert(invented.facts.forbiddenPatternMatches.length > 0);
+const grounded = module.scoreOutput(inventedCase, "작은 자동화는 확인 비용을 줄입니다. 사람이 매번 같은 것을 다시 확인하지 않아도 되기 때문입니다.");
+assert.equal(grounded.absolutePass, true, "a general statement without invented figures must still pass");
+
+const optionCase = fixtures.cases.find((item) => item.id === "option-comparison");
+const unlabeled = module.scoreOutput(optionCase, "이번 주 위험을 줄이는 것이 목표라면 수동 확인이 필요한 쪽을 먼저 적용하는 편이 낫습니다. 자동화된 쪽은 2주 개발이 필요합니다. API 문서도 함께 봅니다.");
+assert.equal(unlabeled.absolutePass, false);
+assert.deepEqual(unlabeled.facts.missingRequired, ["a", "b"], "an incidental latin letter must not satisfy an option label");
+assert.equal(module.scoreOutput(optionCase, "A안은 이번 주에 적용할 수 있지만 수동 확인이 필요합니다. B안은 자동화되지만 2주 개발이 필요합니다. 이번 주 위험을 줄이는 것이 목표라면 A안이 낫습니다.").absolutePass, true);
+
+const retryCase = fixtures.cases.find((item) => item.id === "retry-decision");
+assert.equal(module.scoreOutput(retryCase, "알림 재시도는 최대 2회입니다. 중복 발송 위험이 있습니다. 재시도 간격, 예시 데이터, 정말 다양합니다.").absolutePass, false);
+assert.equal(module.scoreOutput(retryCase, "알림 재시도는 최대 2회입니다. 중복 발송 위험 때문입니다. 재시도 간격은 예시 데이터를 확인한 뒤 정합니다.").absolutePass, true);
+
+const boundary = module.scoreOutput(optionCase, "Bash와 API를 썼습니다.");
+assert.deepEqual(boundary.unnecessaryEnglish.tokens, ["bash"], "allowed terms must not be stripped from inside other words");
+assert.equal(boundary.unnecessaryEnglish.count, 1);
+assert.equal(module.scoreOutput(uncertaintyCase, "group metadata와 sample_flag를 확인했습니다.").unnecessaryEnglish.count, 0);
+
 const signals = module.scoreOutput(qaCase, `# Result\n- ${goodText}\n  - Extra Detail\n|a|b|`);
 assert.equal(signals.structure.headings, 1);
 assert.equal(signals.structure.bullets, 2);
@@ -137,6 +176,15 @@ try {
   const validate = run(["validate", "--fixtures", FIXTURES]);
   assert.equal(validate.status, 0, validate.stderr);
   assert.match(validate.stdout, /10 cases/);
+
+  // The exact command documented in docs/EVALUATION.md.
+  const documented = spawnSync(process.execPath, [
+    "-e",
+    'import("./scripts/evaluate.mjs").then((m) => console.log(m.hashDirectory("plugins/korean-plain")))'
+  ], { cwd: ROOT, encoding: "utf8" });
+  assert.equal(documented.status, 0, documented.stderr);
+  assert.match(documented.stdout.trim(), /^[a-f0-9]{64}$/);
+  assert(!documented.stdout.includes("Usage:"), "importing the module must not run the CLI");
 
   const failingResponses = path.join(tempDir, "failing.json");
   fs.writeFileSync(failingResponses, JSON.stringify(responseEnvelope(qaCase, "결제 오류를 수정했습니다.")));
