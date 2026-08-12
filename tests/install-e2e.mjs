@@ -329,7 +329,7 @@ function findInstalledPlugin(plugins, enabled) {
   const matches = plugins.filter((plugin) => plugin.id === PLUGIN_ID);
   assert.equal(matches.length, 1, `expected exactly one ${PLUGIN_ID} installation`);
   const plugin = matches[0];
-  assert.equal(plugin.version, "0.1.0");
+  assert.equal(plugin.version, "0.1.1");
   assert.equal(plugin.enabled, enabled);
   return plugin;
 }
@@ -360,7 +360,7 @@ function assertCacheMetadata(sandbox, scope, installPath) {
   assert(Array.isArray(records), "installed plugin metadata is missing the target plugin");
   assert.equal(records.length, 1, "installed plugin metadata has duplicate target records");
   assert.equal(records[0].scope, scope);
-  assert.equal(records[0].version, "0.1.0");
+  assert.equal(records[0].version, "0.1.1");
   assert.equal(resolve(records[0].installPath), resolve(installPath));
 
   const marketplaceMetadata = readJson(join(sandbox.cache, "known_marketplaces.json"));
@@ -382,7 +382,7 @@ async function exerciseOutputStyleBoundary(run, sandbox) {
   selected.outputStyle = "korean-plain:Korean Plain";
   writeJson(sandbox.localSettings, selected);
   const details = await run(["plugin", "details", PLUGIN_ID]);
-  assert.match(details, /^korean-plain 0\.1\.0/m);
+  assert.match(details, /^korean-plain 0\.1\.1/m);
   assert.deepEqual(readJson(sandbox.localSettings), selected, "fresh CLI process did not preserve explicit outputStyle selection");
 
   const reset = structuredClone(selected);
@@ -406,7 +406,7 @@ async function runE2E(options, sandbox) {
     const inlinePlugins = await run(["--plugin-dir", PLUGIN_ROOT, "plugin", "list", "--json"], { json: true });
     const inline = inlinePlugins.filter((plugin) => plugin.id === INLINE_PLUGIN_ID);
     assert.equal(inline.length, 1, "local --plugin-dir did not discover korean-plain@inline");
-    assert.equal(inline[0].version, "0.1.0");
+    assert.equal(inline[0].version, "0.1.1");
     assert.equal(inline[0].scope, "session");
     assert.equal(inline[0].enabled, true);
     assert.equal(resolve(inline[0].installPath), resolve(PLUGIN_ROOT));
@@ -456,7 +456,7 @@ async function runE2E(options, sandbox) {
   assertCache(installed.installPath);
   assertCacheMetadata(sandbox, options.scope, installed.installPath);
   const details = await run(["plugin", "details", PLUGIN_ID]);
-  assert.match(details, /^korean-plain 0\.1\.0/m);
+  assert.match(details, /^korean-plain 0\.1\.1/m);
   assert.match(details, /Source: korean-plain@claude-korean-plain/);
   assert.match(details, /Skills \(0\)/);
   assert.match(details, /Agents \(0\)/);

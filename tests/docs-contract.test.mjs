@@ -50,6 +50,8 @@ function validate(root) {
     "hooks",
     "MCP",
     "무조건 짧게",
+    "영어로 질문해도 한국어 답이 옵니다",
+    "keep-coding-instructions",
     "Claude Code 2.1.223에서 검증",
     "MIT License",
     "사실 보존",
@@ -63,7 +65,7 @@ function validate(root) {
   assert.match(readme, /fork한 agent는 부모 system prompt를 상속합니다/);
 
   const evaluation = text(root, "docs/EVALUATION.md");
-  includesAll(evaluation, ["결정적 gate", "선택적인 유료 모델 실행", "--allow-model-calls", "정제한 집계", "mode `0600`", "Claude Code 2.1.223에서 검증"], "EVALUATION");
+  includesAll(evaluation, ["결정적 gate", "결정적 gate가 덮지 않는 범위", "opt-in 증명", "선택적인 유료 모델 실행", "--allow-model-calls", "정제한 집계", "mode `0600`", "Claude Code 2.1.223에서 검증"], "EVALUATION");
   assert.match(evaluation, /모델이나 네트워크를 호출하지 않습니다/);
   assert.match(evaluation, /원시 (?:model output|응답).*공개하거나 commit하지 않습니다/s);
 

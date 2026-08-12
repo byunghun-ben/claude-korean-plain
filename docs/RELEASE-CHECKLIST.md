@@ -11,7 +11,7 @@
 - [ ] working tree와 전체 Git history, commit message, annotated tag, tag archive의 공개 allowlist와 민감 정보 검사가 통과한다.
 - [ ] Claude Code 2.1.223에서 대표 모델 실행을 opt-in으로 수행하고 정제 집계만 기록한다.
 - [ ] 원시 model output과 임시 evidence가 Git 추적 대상 밖에 있고 mode `0600`인지 확인한다.
-- [ ] clean `main`의 release commit과 annotated `v0.1.0` tag가 같은 commit을 가리킨다.
+- [ ] clean `main`의 release commit과 그 버전의 annotated tag가 같은 commit을 가리킨다.
 
 ## 공개와 rollback
 

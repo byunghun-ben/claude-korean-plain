@@ -46,6 +46,8 @@ scope에 따라 설치기가 관리하는 marketplace 선언과 `enabledPlugins`
 ## 적용 범위와 한계
 
 - Korean Plain은 skill이 아니므로 호출할 slash command가 없습니다. `/config`에서 고르는 output style입니다.
+- 사용자가 다른 언어를 요청하지 않는 한 한국어로 답합니다. 영어로 질문해도 한국어 답이 옵니다.
+- `keep-coding-instructions: true`를 사용하므로 Claude Code의 코딩 관련 기본 지침은 그대로 유지됩니다.
 - 선택한 style은 주 대화의 system prompt를 바꿉니다. 일반 subagent에는 적용되지 않습니다. 다만 부모 대화를 fork한 agent는 부모 system prompt를 상속합니다.
 - global `CLAUDE.md`, permissions, hooks, MCP 설정을 추가하거나 변경하지 않습니다.
 - 설치기는 선택한 scope의 marketplace 선언과 `enabledPlugins`를 관리합니다. 사용자가 `/config`에서 선택할 때만 `outputStyle`이 별도로 바뀝니다.

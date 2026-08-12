@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 
 const REPOSITORY_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const EXPECTED_STYLE_SHA256 =
-  "2a811c2cdba566e531d66272edf6a4d0e7d6d25859312c2c6163ec2d87682759";
+  "5e0c11b8381a7ed5f4126ecae1407545f0979269200664738c35089f23a2e76c";
 const ALLOWED_PLUGIN_PATHS = new Set([
   ".claude-plugin",
   ".claude-plugin/plugin.json",
@@ -116,7 +116,7 @@ function validateContract(repositoryRoot) {
     "plugin manifest",
   );
   assert.equal(manifest.name, "korean-plain");
-  assert.equal(manifest.version, "0.1.0", "plugin manifest version must be 0.1.0");
+  assert.equal(manifest.version, "0.1.1", "plugin manifest version must be 0.1.1");
   assert(manifest.description.trim(), "plugin description must not be empty");
   assert.deepEqual(manifest.author, { name: "Byunghun" });
   assert.equal(manifest.homepage, "https://github.com/byunghun-ben/claude-korean-plain");
@@ -183,10 +183,10 @@ negativeCase(
   (root) => {
     const path = join(root, "plugins", "korean-plain", ".claude-plugin", "plugin.json");
     const manifest = readJson(path);
-    manifest.version = "0.1.1";
+    manifest.version = "0.1.2";
     writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
   },
-  /version must be 0\.1\.0/,
+  /version must be 0\.1\.1/,
 );
 
 negativeCase(
