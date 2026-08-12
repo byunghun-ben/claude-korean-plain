@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { hashDirectory } from "../scripts/release-gate.mjs";
+import { guardedSettingsSnapshot, hashDirectory } from "../scripts/release-gate.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SCRIPT = path.join(ROOT, "scripts", "release-gate.mjs");
@@ -227,5 +227,58 @@ withFixture({}, (fixture) => {
   assert.equal(run(fixture, [...args(fixture), "--unknown"]).status, 1, "unknown argument must fail closed");
   assert.equal(run(fixture, ["--repo", fixture.repo]).status, 1, "missing arguments must fail closed");
 });
+
+{
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "release-gate-guard-"));
+  try {
+    const guarded = path.join(directory, "settings.json");
+    assert.deepEqual(guardedSettingsSnapshot(guarded), { exists: false }, "a missing guarded file must be reported as absent");
+
+    // The guard must never open the file, so an unreadable one still works.
+    fs.writeFileSync(guarded, "content must never be read\n", { mode: 0o000 });
+    const unreadable = guardedSettingsSnapshot(guarded);
+    assert.equal(unreadable.exists, true, "the guard must observe a file it cannot read");
+    fs.chmodSync(guarded, 0o600);
+
+    fs.writeFileSync(guarded, '{"a":1}\n', { mode: 0o600 });
+    const before = guardedSettingsSnapshot(guarded);
+
+    // Claude Code replaces the file atomically; identical bytes are not a change.
+    const temporary = path.join(directory, "settings.json.tmp");
+    fs.writeFileSync(temporary, '{"a":1}\n', { mode: 0o600 });
+    fs.renameSync(temporary, guarded);
+    assert.deepEqual(guardedSettingsSnapshot(guarded), before, "an atomic rewrite of identical bytes must not count as a change");
+
+    fs.writeFileSync(guarded, '{"added":true,"a":1}\n', { mode: 0o600 });
+    assert.notDeepEqual(guardedSettingsSnapshot(guarded), before, "a settings edit that changes the size must be detected");
+
+    fs.writeFileSync(guarded, '{"a":1}\n', { mode: 0o600 });
+    fs.chmodSync(guarded, 0o644);
+    assert.notDeepEqual(guardedSettingsSnapshot(guarded), before, "changed permissions must be detected");
+
+    // Documented limit: without reading, a same-size edit is invisible.
+    fs.chmodSync(guarded, 0o600);
+    fs.writeFileSync(guarded, '{"a":2}\n');
+    assert.deepEqual(guardedSettingsSnapshot(guarded), before, "a same-size edit is not detected because the guard never reads the file");
+
+    fs.rmSync(guarded);
+    fs.symlinkSync(path.join(directory, "missing.json"), guarded);
+    assert.deepEqual(guardedSettingsSnapshot(guarded), { exists: false }, "a dangling symbolic link must not pass as settings");
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+{
+  // Importing the module for its exports must not run the CLI, and must work
+  // under `node -e`, where process.argv[1] is absent.
+  const imported = spawnSync(process.execPath, [
+    "-e",
+    'import("./scripts/release-gate.mjs").then((m) => console.log(typeof m.guardedSettingsSnapshot))'
+  ], { cwd: ROOT, encoding: "utf8" });
+  assert.equal(imported.status, 0, imported.stderr);
+  assert.equal(imported.stdout.trim(), "function");
+  assert(!imported.stderr.includes("Release gate"), "importing the module must not run the gate");
+}
 
 console.log("release gate: ok");

@@ -155,18 +155,20 @@ function assertExternalAttestationPath(repo, candidate) {
   return resolved;
 }
 
-function metadataSnapshot(filePath) {
+// The gate never reads the user's settings, which can hold credentials and
+// environment values, so this observes the file without opening it. Claude
+// Code rewrites the file atomically when an interactive session starts and
+// exits, which changes its inode and timestamps while the bytes stay the
+// same; those fields are therefore excluded. The remaining limit is that an
+// edit keeping both size and permissions is not detected.
+export function guardedSettingsSnapshot(filePath) {
   if (!fs.existsSync(filePath)) return { exists: false };
-  const stat = fs.lstatSync(filePath, { bigint: true });
+  const stat = fs.lstatSync(filePath);
   if (!stat.isFile() || stat.isSymbolicLink()) throw new Error("Guarded user settings are not a regular file");
   return {
     exists: true,
-    device: stat.dev.toString(),
-    inode: stat.ino.toString(),
-    mode: stat.mode.toString(),
+    mode: (stat.mode & 0o777).toString(8),
     size: stat.size.toString(),
-    mtimeNs: stat.mtimeNs.toString(),
-    ctimeNs: stat.ctimeNs.toString(),
   };
 }
 
@@ -193,7 +195,7 @@ async function runAuthenticatedConfigPicker(repo, claudeBin, statuses) {
   const picker = path.join(repo, "tests", "config-picker.exp");
   if (!fs.existsSync(picker)) throw new Error("Config picker proof script is missing");
   const userSettings = path.join(os.homedir(), ".claude", "settings.json");
-  const before = metadataSnapshot(userSettings);
+  const before = guardedSettingsSnapshot(userSettings);
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "release-picker-proof-"));
   const project = path.join(temporary, "project");
   const localSettings = path.join(project, ".claude", "settings.local.json");
@@ -210,7 +212,7 @@ async function runAuthenticatedConfigPicker(repo, claudeBin, statuses) {
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
-  if (!sameSnapshot(before, metadataSnapshot(userSettings))) throw new Error("Authenticated picker changed user settings metadata");
+  if (!sameSnapshot(before, guardedSettingsSnapshot(userSettings))) throw new Error("Authenticated picker changed user settings");
 }
 
 export function expectedReleaseIdentity(repo, options, headCommit) {
@@ -324,6 +326,8 @@ export async function runReleaseGate(argv) {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+// process.argv[1] is absent under `node -e`, where this module is imported
+// for its exports rather than run as the CLI.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   process.exitCode = await runReleaseGate(process.argv.slice(2));
 }
