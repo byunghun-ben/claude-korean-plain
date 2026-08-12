@@ -196,13 +196,25 @@ export function scanArchive(repo, tag) {
   }
 }
 
+// Naming the offending ref or path would defeat the redaction, so each kind
+// that has a routine cause states the allowed set and the next step instead.
+const REMEDIATION = new Map([
+  ["unexpected-ref", [
+    "Allowed refs: refs/heads/main, refs/remotes/origin/HEAD, refs/remotes/origin/main, and v-prefixed semver tags.",
+    "Local tooling can leave refs in its own refs/<tool>/ namespace. List them with `git for-each-ref --format='%(refname)'`",
+    "and delete the ones that do not belong with `git update-ref -d <ref>`.",
+  ]],
+]);
+
 export function formatFailure(violations) {
   const counts = new Map();
   for (const violation of violations) counts.set(violation.kind, (counts.get(violation.kind) || 0) + 1);
+  const kinds = [...counts].sort();
   return [
     `Public boundary failed: ${violations.length} violation(s).`,
-    ...[...counts].sort().map(([kind, count]) => `- ${kind}: ${count}`),
+    ...kinds.map(([kind, count]) => `- ${kind}: ${count}`),
     "Candidate values and paths are redacted.",
+    ...kinds.flatMap(([kind]) => REMEDIATION.get(kind) ?? []),
   ].join("\n");
 }
 

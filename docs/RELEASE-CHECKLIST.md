@@ -8,6 +8,7 @@
 - [ ] 모든 결정적 contract test와 합성 fixture 평가가 통과한다.
 - [ ] 격리된 user scope와 project scope에서 설치, 선택 없이 자동 적용, `/clear`, disable 후 해제, uninstall, marketplace remove를 검증한다.
 - [ ] 설치 전후 diff에서 installer-managed marketplace 선언과 `enabledPlugins`만 바뀌고 `outputStyle`은 설치기가 쓰지 않음을 확인한다.
+- [ ] `git for-each-ref --format='%(refname)'`에 `refs/heads/main`, `refs/remotes/origin/HEAD`, `refs/remotes/origin/main`, release tag 외의 ref가 없다. 로컬 도구가 자기 namespace에 남긴 ref는 `git update-ref -d`로 지운다.
 - [ ] working tree와 전체 Git history, commit message, annotated tag, tag archive의 공개 allowlist와 민감 정보 검사가 통과한다.
 - [ ] Claude Code 2.1.228에서 대표 모델 실행을 opt-in으로 수행하고 정제 집계만 기록한다.
 - [ ] 원시 model output과 임시 evidence가 Git 추적 대상 밖에 있고 mode `0600`인지 확인한다.

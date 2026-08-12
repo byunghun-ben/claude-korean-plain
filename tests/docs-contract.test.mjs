@@ -80,7 +80,7 @@ function validate(root) {
   includesAll(issue, ["claude-version", "model", "regression-type", "reproduction-input", "expected", "actual", "번역투", "사실 왜곡", "과잉 구조", "지나친 축약", "Secret", "원시 대화 transcript"], "issue template");
 
   const release = text(root, "docs/RELEASE-CHECKLIST.md");
-  includesAll(release, ["claude plugin validate --strict", "user scope", "project scope", "전체 Git history", "public clone", "cache", "완전히 회수할 수 없습니다", "Community Marketplace", "v0.1.0 완료 범위에 포함하지 않습니다"], "release checklist");
+  includesAll(release, ["claude plugin validate --strict", "user scope", "project scope", "전체 Git history", "git for-each-ref", "git update-ref -d", "public clone", "cache", "완전히 회수할 수 없습니다", "Community Marketplace", "v0.1.0 완료 범위에 포함하지 않습니다"], "release checklist");
 
   const changelogAndNote = `${text(root, "CHANGELOG.md")}\n${text(root, "docs/releases/v0.1.0.md")}\n${text(root, "docs/releases/v0.2.0.md")}`;
   includesAll(changelogAndNote, ["0.1.0", "0.2.0", "output style", "별도의 업로드 release asset"], "release documents");

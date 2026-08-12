@@ -87,8 +87,29 @@ withFixture((root) => {
   git(root, "add", ".");
   git(root, "commit", "-m", "clean release");
   git(root, "branch", "private-work");
-  assert(scanRefs(root).some((item) => item.kind === "unexpected-ref"), "non-main branch ref must fail");
+  const violations = scanRefs(root);
+  assert(violations.some((item) => item.kind === "unexpected-ref"), "non-main branch ref must fail");
   assert(scanHistory(root).some((item) => item.kind === "unexpected-ref"), "history must include ref validation");
+  const output = formatFailure(violations);
+  assert(!output.includes("private-work"), "failure output must not name the offending ref");
+  assert(output.includes("git for-each-ref"), "failure output must say how to list refs");
+  assert(output.includes("git update-ref -d"), "failure output must say how to remove a ref");
+});
+
+withFixture((root) => {
+  // A tree ref is what local tooling leaves behind; it must fail the same way.
+  git(root, "add", ".");
+  git(root, "commit", "-m", "clean release");
+  const tree = spawnSync("git", ["-C", root, "rev-parse", "HEAD^{tree}"], { encoding: "utf8" });
+  assert.equal(tree.status, 0);
+  git(root, "update-ref", "refs/tooling/captures/base", tree.stdout.trim());
+  assert(scanRefs(root).some((item) => item.kind === "unexpected-ref"), "a tool ref pointing at a tree must fail");
+});
+
+withFixture((root) => {
+  fs.writeFileSync(path.join(root, "allowed.txt"), shapedSecret());
+  const output = formatFailure(scanWorkingTree(root));
+  assert(!output.includes("git update-ref -d"), "remediation must only appear for the kind it belongs to");
 });
 
 withFixture((root) => {
