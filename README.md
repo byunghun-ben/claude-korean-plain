@@ -4,6 +4,20 @@ Korean Plain은 Claude Code의 답변을 자연스럽고 읽기 쉬운 한국어
 
 이 저장소는 MIT License로 배포됩니다. Claude Code 2.1.228에서 검증했습니다. 다른 버전의 호환성은 아직 검증하지 않았습니다.
 
+## 여러 언어를 오가는 경우
+
+Korean Plain `v0.2.0`은 계속 사용할 수 있습니다. 한국어로만 답하도록 고정하는 대신, 사용자가 입력하거나 요청한 언어에 맞춰 답하는 방식을 원한다면 더 넓은 범위의 [Plain Language `v0.1.0`](https://github.com/byunghun-ben/claude-plain-language/releases/tag/v0.1.0)을 선택할 수 있습니다.
+
+자동으로 이전되는 것은 아닙니다. 사용자가 직접 전환해야 합니다. Korean Plain을 제거할 필요는 없지만, 두 플러그인 모두 output style을 강제하므로 동시에 활성화하면 안 됩니다. Korean Plain을 설치된 상태로 남겨 두고 비활성화한 다음 Plain Language를 설치하면 쉽게 되돌릴 수 있습니다.
+
+```sh
+claude plugin disable korean-plain@claude-korean-plain --scope user
+claude plugin marketplace add --scope user https://github.com/byunghun-ben/claude-plain-language.git
+claude plugin install --scope user plain-language@claude-plain-language
+```
+
+Korean Plain 자체의 배포물과 ID는 바뀌지 않았습니다. 단독 설치 검증 범위는 [Korean Plain `v0.2.0`](https://github.com/byunghun-ben/claude-korean-plain/releases/tag/v0.2.0)과 [Plain Language 격리 설치 검증 기록](https://github.com/byunghun-ben/claude-plain-language/blob/v0.1.0/docs/verification/lifecycle.md)에서 확인할 수 있습니다.
+
 ## 설치
 
 기본 user scope로 설치하면 다음 명령을 실행합니다.
